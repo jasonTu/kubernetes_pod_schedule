@@ -1,0 +1,6 @@
+# 创建自己Service的PrometheusRule
+## 注意事项1 PrometheusRule的name唯一
+开发者编写自己Service的PrometheusRule需要保证name唯一,建议使用create而不是apply避免覆盖他人规则
+
+## 注意事项2 groups.labels需要设定owner标签
+查看PrometheusRule_Alertsvc.yaml的labels

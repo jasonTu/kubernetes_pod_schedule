@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+#PrometheusRule会根据name创建在Prometheus-Server的/etc/prometheus/rules/prometheus-k8s-rulefiles-0/目录下
+#生成yaml文件命名规则 [namespace][name]
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: k8s
+    role: alert-rules
+  #prometheus-k8s-0中 /etc/prometheus/rules/prometheus-k8s-rulefiles-0/istio-system-prometheus-k8s-rules.yaml
+  name: bowen-logreceiver
+  namespace: istio-system
+spec:
+  groups:
+  - name: alertsvc.rules
+    rules:
+    - alert: AlertTasksMaxDelaySeconds
+      expr: alert_tasks_max_delay_seconds > 200
+      # 若1分钟都满足expr条件，则Alert从Pending到Firing触发报警
+      for: 1m
+      labels:
+        # 需要命令该Service的所有者
+        owner: yubowen
+        # 设定报警的等级
+        severity: critical
+      #设置提示信息，方便接受到报警排查问题
+      annotations:
+        summary: "instance:{{$labels.instance}} Delay timeout"
+        description: "{{ $labels.instance }} timeout , current value: {{$value}}s"
+

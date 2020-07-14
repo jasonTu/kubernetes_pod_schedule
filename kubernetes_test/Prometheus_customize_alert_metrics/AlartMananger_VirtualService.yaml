@@ -1,0 +1,27 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.istio.io/v1alpha3","kind":"VirtualService","metadata":{"annotations":{},"name":"alertmanager-vs","namespace":"istio-system"},"spec":{"gateways":["istio-system/monitoring-gateway"],"hosts":["*"],"http":[{"match":[{"uri":{"prefix":"/alertmanager"}}],"route":[{"destination":{"host":"alertmanager","port":{"number":9093}}}]}]}}
+  generation: 1
+  name: alertmanager-vs
+  namespace: istio-system
+  selfLink: /apis/networking.istio.io/v1beta1/namespaces/istio-system/virtualservices/alertmanager-vs
+spec:
+  gateways:
+  - istio-system/monitoring-gateway
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /alertmanager
+    route:
+    - destination:
+        host: alertmanager
+        port:
+          number: 9093
+
+
+

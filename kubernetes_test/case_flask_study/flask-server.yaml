@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-service
+  namespace: flask-cluster
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    name: service-port
+    nodePort: 30099
+    protocol: TCP
+    targetPort: 80
+  - port: 25000     # 集群入口
+    name: admin-port
+    nodePort: 30098   # 外部入口
+    protocol: TCP
+    targetPort: 25000  # 容器入口
+
+  selector:
+    app: flask

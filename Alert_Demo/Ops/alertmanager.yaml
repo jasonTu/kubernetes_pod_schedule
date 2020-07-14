@@ -1,0 +1,43 @@
+global:
+  #在没有告警的情况下声明为已解决的时间
+  resolve_timeout: 5m
+  #配置邮件信息
+  smtp_smarthost: 'smtp.qq.com:465'
+  smtp_from: '88382078@qq.com'
+  smtp_auth_username: '88382078@qq.com'
+  smtp_auth_password: 'zcufjzmvjjnpbgjh'
+  smtp_require_tls: false
+#所有告警信息进入后的根路由，用于设置告警的分发策略
+route:
+  #这里的标签列表是接受到告警信息后的重新分组标签（根据label进行聚合）
+  #例如：在接收到的告警信息里有许多具有job=A和severity=warning标签的告警信息被聚合到一个分组内
+  group_by: ['owner','severity']
+  #在第1条告警发送后，需要等待至少group_wait时间来初始化通知，
+  #这种方式可以确保有足够的时间为同一分组获取多条告警，然后一起触发这条告警信息
+  group_wait: 30s
+  #在第1条告警发送后，等待group_interval时间来发送新的一组告警信息
+  group_interval: 5m
+  #如果某条告警信息已经发送成功，则等待repeat_interval时间重新发送他们
+  repeat_interval: 12h
+  #默认的receiver: 如果某条告警没有被一个route匹配，则发送给默认的接收器
+  receiver: 'default'
+  #上面所有属性都有子路由继承，且可以在每个子路由上覆盖
+  routes:
+  - receiver: email
+    group_wait: 25s
+    match:
+      #匹配规则group.rules.labels
+      owner: yubowen
+
+receivers:
+- name: 'default'
+  email_configs:
+  - to: '88382078@qq.com'
+    send_resolved: true
+- name: 'email'
+  email_configs:
+  - to: '88382078@qq.com'
+    send_resolved: true
+  - to: 'yubowen0525@163.com'
+
+

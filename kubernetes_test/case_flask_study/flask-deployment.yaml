@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+        name: flask-deployment
+        namespace: flask-cluster
+spec:
+  selector:
+    matchLabels:
+      app: flask
+  replicas: 3     # 3个副本
+  template:
+    metadata:
+      labels:
+        app: flask
+    spec:
+      containers:
+        - name: flask
+          image: 88382078/flask-v1.0
+          ports:
+          - containerPort: 80
+          resources:
+            limits:
+              cpu: 50m
+              memory: 50Mi
+            requests:
+              cpu: 25m
+              memory: 30Mi

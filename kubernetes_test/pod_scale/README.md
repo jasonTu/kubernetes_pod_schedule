@@ -9,3 +9,7 @@ kubectl scale deployment [name] --replicas 5
 ```
 
 ## 自动HPA
+- 首先Pod 需要定义 Pod Request的值，才能使用CPUUtilizationPercentage
+- Kubernetes Monitoring Architecture 中 定义一套标准化API接口 Resource Metrics API
+
+### 算法详解

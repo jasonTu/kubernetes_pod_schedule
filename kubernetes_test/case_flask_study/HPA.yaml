@@ -1,0 +1,19 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+      name: flask-scale
+      namespace: flask-cluster
+spec:
+  scaleTargetRef:          #目标作用对象，可以是Deployment,RC,PeplicaSet
+    apiVersion: apps/v1
+    kind: Deployment
+    name: flask-deployment    # 扩容对象
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource    #基于资源的指标值，可设置的资源为CPU和内存
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50

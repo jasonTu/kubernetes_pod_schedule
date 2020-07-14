@@ -1,0 +1,37 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+      name: flask-scale
+spec:
+  scaleTargetRef:          #目标作用对象，可以是Deployment,RC,PeplicaSet
+    apiVersion: app/v1
+    kind: Deployment
+    name: flask-deployment    # 扩容对象
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource    #基于资源的指标值，可设置的资源为CPU和内存
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+  - type: Pods    #基于Pod的指标，系统将对全部Pod副本的指标值进行平均值计算
+    pods:
+      metrics:
+        name: packets-per-second
+        target:
+          type: AverageValue    # Pod只能用该类型
+          averageValue: 1k      #目标指标平均值为1000时触发扩缩容操作
+  - type: Object    #基于某种资源对象的指标或应用系统的任意自定义指标
+    object:
+      metrics:
+        name: requests-per-second
+      describedObject:
+        apiVersion: extensions/v1beta1
+        kind: Ingress
+        name: main-route
+        target:
+          type: Value       #值来源Ingress “main-route” Ingress每s请求数到达2000个触发扩缩容操作
+          value: 2k
+  - type: External  #引入对外部系统指标的支持

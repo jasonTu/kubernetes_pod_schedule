@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+      name: flask
+      labels:
+        app: flask
+spec:
+  selector:
+    matchLabels:  # Deployment 选择 标签 app=flask
+      app: flask
+  replicas: 3     # 3个副本
+  template:
+    metadata:
+      labels:
+        app: flask
+    spec:
+      containers:
+        - name: flask
+          image: 88382078/flask-v1.0
+          ports:
+          - containerPort: 80

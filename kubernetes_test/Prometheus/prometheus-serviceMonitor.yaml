@@ -1,0 +1,38 @@
+apiVersion: monitoring.coreos.com/v1  #告诉metrics-server监控带有label标签app=flask-pod-svc的svc后面的一组pod
+kind: ServiceMonitor
+metadata:
+  name: flask-monitor
+  labels:
+    team: frontend    #用于prometheus-server的选择
+spec:
+  selector:
+    matchLabels:
+      app: flask-pod-svc  #选择pod的svc
+  endpoints:
+  - port: flask
+#  namespaceSelector:
+#    matchNames:
+#      - target_ns_name     #选择应用所在的命名空间内
+#  namespaceSelector:
+#    any: true              # 匹配任何值
+
+
+#spec     #认证安全
+#  endpoints:
+#  - basicAuth:
+#      password:
+#        name: basic-auth
+#        key: password
+#      username:
+#        name: basic-auth
+#        key: user
+#    port: web
+#---
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: basic-auth
+#type: Opaque
+#data:
+#  user: dXNlcgo= # base64编码后的用户名
+#  password: cGFzc3dkCg== # base64编码后的密码

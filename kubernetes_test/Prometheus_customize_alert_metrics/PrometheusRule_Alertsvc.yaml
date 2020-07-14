@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: k8s
+    role: alert-rules
+  name: prometheus-k8s-rules
+  namespace: istio-system
+spec:
+  groups:
+  - name: alertsvc.rules
+    rules:
+    - alert: AlertTasksMaxDelaySeconds
+      expr: alert_tasks_max_delay_seconds > 200
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "instance:{{$labels.instance}} Delay timeout"
+        description: "{{ $labels.instance }} timeout , current value: {{$value}}s"
+

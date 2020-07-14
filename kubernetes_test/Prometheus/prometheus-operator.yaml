@@ -1,0 +1,31 @@
+apiVersion: monitoring.coreos.com/v1   # operator 方式部署 monitoring.coreos.com 的 CRD资源
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: prometheus-operator
+  name: prometheus-operator
+  namespace: flask-cluster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: prometheus-operator
+  template:
+    metadata:
+      labels:
+        k8s-app: prometheus-operator
+    spec:
+      containers:
+      - image: quay.io/coreos/prometheus-operator:v0.17.0
+        imagePullPolicy: IfNotPresent
+        name: prometheus-operator
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          limits:
+            cpu: 200m
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 50Mi
