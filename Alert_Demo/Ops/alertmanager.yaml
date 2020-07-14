@@ -3,9 +3,9 @@ global:
   resolve_timeout: 5m
   #配置邮件信息
   smtp_smarthost: 'smtp.qq.com:465'
-  smtp_from: '88382078@qq.com'
-  smtp_auth_username: '88382078@qq.com'
-  smtp_auth_password: 'zcufjzmvjjnpbgjh'
+  smtp_from: '********@qq.com'
+  smtp_auth_username: '********@qq.com'
+  smtp_auth_password: '**************'
   smtp_require_tls: false
 #所有告警信息进入后的根路由，用于设置告警的分发策略
 route:
@@ -32,12 +32,12 @@ route:
 receivers:
 - name: 'default'
   email_configs:
-  - to: '88382078@qq.com'
+  - to: '*********@qq.com'
     send_resolved: true
 - name: 'email'
   email_configs:
-  - to: '88382078@qq.com'
+  - to: '********@qq.com'
     send_resolved: true
-  - to: 'yubowen0525@163.com'
+  - to: '*********@163.com'
 
 
