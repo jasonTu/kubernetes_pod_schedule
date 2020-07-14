@@ -6,7 +6,7 @@ metadata:
   labels:
     prometheus: k8s
     role: alert-rules
-  #prometheus-k8s-0中 /etc/prometheus/rules/prometheus-k8s-rulefiles-0/istio-system-prometheus-k8s-rules.yaml
+  #prometheus-k8s-0中 /etc/prometheus/rules/prometheus-k8s-rulefiles-0/istio-system-bowen-logreceiver.yaml
   name: bowen-logreceiver
   namespace: istio-system
 spec:

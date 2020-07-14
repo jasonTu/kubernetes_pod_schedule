@@ -1,7 +1,10 @@
 # Dev 创建Service的PrometheusRule
 - **注意事项1**： PrometheusRule的name唯一
-![1](.README_images/e96cb20d.png)
-开发者编写自己Service的PrometheusRule需要保证name唯一,建议使用create而不是apply避免覆盖他人规则
+![1](.README_images/b07800a5.png)
+    
+    开发者编写自己Service的PrometheusRule需要保证name唯一,建议使用create而不是apply避免覆盖他人规则
+    
+    效果展示图：![3](.README_images/c582b6da.png)
 
 - **注意事项2**： groups.labels需要设定owner标签
 ![2](.README_images/6f0e874c.png)
