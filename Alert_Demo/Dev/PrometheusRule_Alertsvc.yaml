@@ -6,13 +6,13 @@ metadata:
   labels:
     prometheus: k8s
     role: alert-rules
-  #prometheus-k8s-0中 /etc/prometheus/rules/prometheus-k8s-rulefiles-0/istio-system-prometheus-k8s-rules.yaml
+  #prometheus-k8s-0中 /etc/prometheus/rules/prometheus-k8s-rulefiles-0/istio-system-bowen-logreceiver.yaml
   name: bowen-logreceiver
   namespace: istio-system
 spec:
   groups:
   - name: alertsvc.rules
-    rules:
+    rules:`
     - alert: AlertTasksMaxDelaySeconds
       expr: alert_tasks_max_delay_seconds > 200
       # 若1分钟都满足expr条件，则Alert从Pending到Firing触发报警
