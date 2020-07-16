@@ -12,13 +12,13 @@ metadata:
 spec:
   groups:
   - name: alertsvc.rules
-    rules:`
+    rules:
     - alert: AlertTasksMaxDelaySeconds
       expr: alert_tasks_max_delay_seconds > 200
       # 若1分钟都满足expr条件，则Alert从Pending到Firing触发报警
       for: 1m
       labels:
-        # 需要命令该Service的所有者
+        # 需要定义该PrometheusRule的所有者
         owner: yubowen
         # 设定报警的等级
         severity: critical
