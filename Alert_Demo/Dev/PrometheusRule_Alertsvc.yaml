@@ -12,7 +12,7 @@ metadata:
 spec:
   groups:
   - name: alertsvc.rules
-    rules:`
+    rules:
     - alert: AlertTasksMaxDelaySeconds
       expr: alert_tasks_max_delay_seconds > 200
       # 若1分钟都满足expr条件，则Alert从Pending到Firing触发报警
