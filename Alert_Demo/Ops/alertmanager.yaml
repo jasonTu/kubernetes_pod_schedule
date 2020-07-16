@@ -23,7 +23,7 @@ route:
   receiver: 'default'
   #上面所有属性都有子路由继承，且可以在每个子路由上覆盖
   routes:
-  - receiver: email
+  - receiver: bowen
     group_wait: 25s
     match:
       #匹配规则group.rules.labels
@@ -34,10 +34,13 @@ receivers:
   email_configs:
   - to: '*********@qq.com'
     send_resolved: true
-- name: 'email'
+- name: 'bowen'
   email_configs:
   - to: '********@qq.com'
     send_resolved: true
   - to: '*********@163.com'
+  webhook_configs:
+  - url: 'http://*************'
+    send_resolved: true
 
 
