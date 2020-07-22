@@ -1,0 +1,6 @@
+uwsgi
+gunicorn
+gevent
+flask
+flask-restful
+flask-sqlalchemy

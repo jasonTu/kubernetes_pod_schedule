@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: flask
-          image: 88382078/flask-v1.0
+          image: 88382078/flask-v1.0:1.0.0
           ports:
           - containerPort: 80
 

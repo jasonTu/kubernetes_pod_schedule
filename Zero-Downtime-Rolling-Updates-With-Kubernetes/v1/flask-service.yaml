@@ -1,0 +1,33 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: flask-vs
+
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - istio-system/monitoring-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /api
+    route:
+    - destination:
+        host: flask
+        port:
+          number: 8080
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: flask
+
+spec:
+  host: flask
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+---
