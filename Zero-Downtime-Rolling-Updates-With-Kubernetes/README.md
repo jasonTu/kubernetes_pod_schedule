@@ -1,5 +1,5 @@
 # 一 升级与回滚
-1. 首先需要创建一个[Deployment](v1/flask-deployment-v1.yaml)的资源(控制着Replicaset->多个pod)
+1. 首先需要创建一个[Deployment](./gunicorn/flask-deployment-v1.yaml)的资源(控制着Replicaset->多个pod)
     - 解释一下deployment->replicaSet->Pod 的关系： 
         - ![1](.README_images/fabdc4db.png)
         - replicaSet名称包含了其pod模板的哈希值，deployment会创建多个replicaSet用来对应管理一个版本的pod模板。
@@ -73,6 +73,93 @@ Kubernetes 会根据 Pods 的状态去更新 Endpoints 对象，这样就可以�
     - 一旦新的 Pod 处于活动状态并准备就绪后，Kubernetes 就将会停止旧的 Pod，从而将 Pod 的状态更新为 “Terminating”，然后从 Endpoints 对象中移除，并且发送一个 `SIGTERM` 信号给 Pod 的主进程。
     - `SIGTERM` 信号就会让容器以正常的方式关闭，并且不接受任何新的连接
     - Pod 从 Endpoints 对象中被移除后，前面的负载均衡器就会将流量路由到其他（新的）Pod 中去
+
+# 五 存活性探测和就绪性探测
+## 5.1 存活性探测
+存活性探测，最主要是用来探测pod是否需要重启–决定把pod删除重新创建
+
+在spec的containers增加与image同级
+1. exec
+```yaml
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2       
+          failureThreshold: 3     
+```
+2. http
+```yaml
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 8080
+        scheme: HTTP
+    initialDelaySeconds: 5  #表示容器启动之后延迟多久进行liveness探测
+    periodSeconds: 10       # 探测的周期时间
+    timeoutSeconds: 2       # 每次执行探测的超时时间
+    successThreshold: 1     # 最少连续几次探测成功的次数，满足该次数则认为success。
+    failureThreshold: 3     # 最少连续几次探测失败的次数，满足该次数则认为fail作
+```
+3. tcp
+```yaml
+  livenessProbe:
+      tcpSocket:
+        port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 2 
+  failureThreshold: 3
+```
+## 5.2 就绪性探测
+就绪性探测，用来探测pod是否已经能够提供服务–决定是否参与分配流量
+
+在spec的containers中增加
+与image同级
+1. 1
+```yaml
+        readinessProbe:
+          tcpSocket:              #任何大于200小于400的返回码都会认定是成功的返回码。其他返回码都会被认为是失败的返回码
+            port: 80              #探针检测命令是检查tcp连接 端口80 是否畅通,也可以检查某个http 请求是否返回成功码
+          initialDelaySeconds: 5  #告诉kubelet在第一次执行probe之前要的等待5秒钟
+          periodSeconds: 10       #规定kubelet要每隔10秒执行一次readinessProbe 检查
+```
+2. 2
+```yaml
+        readinessProbe:
+          httpGet:
+            path: /api/nowater/version
+            port: 8080
+            httpHeaders:
+            - name : X-Custom-Header
+              value: Awesome
+          initialDelaySeconds: 5
+          periodSeconds: 10
+```
+# 六 preStop
+可读探针只是我们平滑滚动更新的起点,为了解决 Pod 停止的时候不会阻塞并等到负载均衡器重新配置的问题,我们需要使用 preStop 这个生命周期的钩子，在容器终止之前调用该钩子。
+
+生命周期钩子函数是同步的，所以必须在将最终终止信号发送到容器之前完成，在我们的示例中，我们使用该钩子简单的等待，然后 SIGTERM 信号将停止应用程序进程。同时，Kubernetes 将从 Endpoints 对象中删除该 Pod，所以该 Pod 将会从我们的负载均衡器中排除.
+
+**基本上来说我们的生命周期钩子函数等待的时间可以确保在应用程序停止之前重新配置负载均衡器**。
+```yaml
+        livenessProbe:
+          # ...
+        readinessProbe:
+          # ...
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/bash", "-c", "sleep 20"]
+```
+我们这里使用 preStop 设置了一个 20s 的宽限期，**Pod 在真正销毁前会先 sleep 等待 20s，这就相当于留了时间给 Endpoints 控制器和 kube-proxy 更新去 Endpoints 对象和转发规则，这段时间 Pod 虽然处于 Terminating 状态，即便在转发规则更新完全之前有请求被转发到这个 Terminating 的 Pod，依然可以被正常处理，因为它还在 sleep，没有被真正销毁**。
+
+## 思考
+而且上面的方式是只适用于短连接的，对于类似于 websocket 这种长连接应用需要做滚动更新的话目前还没有找到一个很好的解决方案，有的团队是将长连接转换成短连接来进行处理的，我这边还是在应用层面来做的支持，比如客户端增加重试机制，连接断掉以后会自动重新连接，大家如果有更好的办法也可以留言互相讨论下方案。
+
 # 测试部署情况
 ## 部署
 ```shell script
@@ -81,16 +168,22 @@ vim flask-deployment-v2.txt
 vim flask-deployment-v3.txt
 vim flask-deployment-v4.txt
 vim flask-deployment-v5.txt
+vim flask-deployment-v6.txt
+vim flask-deployment-v7.txt
 mv flask-deployment-v1.txt flask-deployment-v1.yaml
 mv flask-deployment-v2.txt flask-deployment-v2.yaml
-mv flask-deployment-v1.txt flask-deployment-v3.yaml
-mv flask-deployment-v1.txt flask-deployment-v4.yaml
-mv flask-deployment-v1.txt flask-deployment-v5.yaml
+mv flask-deployment-v3.txt flask-deployment-v3.yaml
+mv flask-deployment-v4.txt flask-deployment-v4.yaml
+mv flask-deployment-v5.txt flask-deployment-v5.yaml
+mv flask-deployment-v6.txt flask-deployment-v6.yaml
+mv flask-deployment-v7.txt flask-deployment-v7.yaml
 kubectl apply -f flask-deployment-v1.yaml --record
 kubectl apply -f flask-deployment-v2.yaml --record
 kubectl apply -f flask-deployment-v3.yaml --record
 kubectl apply -f flask-deployment-v4.yaml --record
 kubectl apply -f flask-deployment-v5.yaml --record
+kubectl apply -f flask-deployment-v6.yaml --record
+kubectl apply -f flask-deployment-v7.yaml --record
 kubectl delete -f flask-deployment-v1.yaml 
 kubectl delete -f flask-deployment-v2.yaml 
 kubectl delete -f flask-deployment-v3.yaml 
@@ -123,3 +216,14 @@ go run .\main.go -c 25 -n 100000 -u http://dev-bmonitoring-nabu.qa.cloudedge.tre
     - rolling update：![1](.README_images/86c2f335.png)
     - 遇到504,404错误状态码，7分钟左右恢复：![5](.README_images/1378acda.png)
     - 遇到509错误状体码，1分钟左右恢复：![6](.README_images/bc0735df.png)
+2. 部署两种类型的探针
+    - 发现依然存在问题:且在处理逻辑长的API，依然会有一些503出现 
+    - sleep_api:
+        ![18](.README_images/4d16c8db.png)
+    - api:
+        ![19](.README_images/67d6e0cb.png)
+3. 增加preStop声明钩子后，版本切换不会有问题
+    - sleep_api:
+        ![20](.README_images/f1e50d8b.png)
+    - api:
+        ![21](.README_images/bb72de8f.png)

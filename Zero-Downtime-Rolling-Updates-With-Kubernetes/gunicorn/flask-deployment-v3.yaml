@@ -21,10 +21,12 @@ spec:
     metadata:
       labels:
         app: flask
+      annotations:
+       sidecar.istio.io/inject: "false"
     spec:
       containers:
         - name: flask
-          image: 88382078/flask:v2.0.0
+          image: 88382078/flask:v4.0.0
 #          resources:
 #            requests:
 #              cpu: 3
@@ -34,7 +36,7 @@ spec:
 #              memory: 100M
           env:
             - name: imageVersion
-              value: v2
+              value: v3 work_count=10
           ports:
           - containerPort: 8080
 #          readinessProbe:

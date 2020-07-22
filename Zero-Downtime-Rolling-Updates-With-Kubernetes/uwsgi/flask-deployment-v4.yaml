@@ -1,0 +1,74 @@
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: flask-cluster
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+        name: flask-deployment
+spec:
+  selector:
+    matchLabels:
+      app: flask
+  replicas: 3     # 3个副本
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: flask
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: flask
+          image: 88382078/flask-uwsgi:v4.0.1
+#          resources:
+#            requests:
+#              cpu: 3
+#              memory: 50M
+#            limits:
+#              cpu: 5
+#              memory: 100M
+          env:
+            - name: imageVersion
+              value: v4 uwsgi-gevent
+          ports:
+          - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /api/
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5  #表示容器启动之后延迟多久进行liveness探测
+            periodSeconds: 10       # 探测的周期时间
+            timeoutSeconds: 2       # 每次执行探测的超时时间
+            successThreshold: 1     # 最少连续几次探测成功的次数，满足该次数则认为success。
+            failureThreshold: 3     # 最少连续几次探测失败的次数，满足该次数则认为fail作
+          readinessProbe:
+            httpGet:
+              path: /api/
+              port: 8080
+            initialDelaySeconds: 5  #表示容器启动之后延迟多久进行liveness探测
+            periodSeconds: 5       # 探测的周期时间
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask
+  labels:
+    app: flask
+spec:
+  ports:
+  - port: 8080
+    name: http
+    protocol: TCP
+    targetPort: 8080
+
+  selector:
+    app: flask
