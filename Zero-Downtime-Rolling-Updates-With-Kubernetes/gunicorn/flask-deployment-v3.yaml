@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
         - name: flask
-          image: 88382078/flask:v4.0.0
+          image: 88382078/flask:v3.0.0
 #          resources:
 #            requests:
 #              cpu: 3
@@ -36,14 +36,29 @@ spec:
 #              memory: 100M
           env:
             - name: imageVersion
-              value: v3 work_count=10
+              value: "{v3:Configure livenessProbe, readinessProbe, lifecycle}"
           ports:
           - containerPort: 8080
-#          readinessProbe:
-#            periodSeconds: 1  #定义一个就绪探针并每隔1s执行一次
-#            httpGet:
-#              path: /initdb
-#              port: 80
+          livenessProbe:
+            httpGet:
+              path: /api/
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5  #表示容器启动之后延迟多久进行liveness探测
+            periodSeconds: 10       # 探测的周期时间
+            timeoutSeconds: 2       # 每次执行探测的超时时间
+            successThreshold: 1     # 最少连续几次探测成功的次数，满足该次数则认为success。
+            failureThreshold: 3     # 最少连续几次探测失败的次数，满足该次数则认为fail作
+          readinessProbe:
+            httpGet:
+              path: /api/
+              port: 8080
+            initialDelaySeconds: 5  #表示容器启动之后延迟多久进行liveness探测
+            periodSeconds: 5       # 探测的周期时间
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/bash", "-c", "sleep 20"]
 
 ---
 apiVersion: v1

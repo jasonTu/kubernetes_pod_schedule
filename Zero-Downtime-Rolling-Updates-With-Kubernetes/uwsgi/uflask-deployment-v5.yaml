@@ -22,11 +22,12 @@ spec:
       labels:
         app: flask
       annotations:
-        sidecar.istio.io/inject: "false"
+        sidecar.istio.io/inject: "true"
     spec:
       containers:
         - name: flask
-          image: 88382078/flask-uwsgi:v6.0.0
+          image: 88382078/flask-uwsgi:v5.0.0
+          imagePullPolicy: Always
 #          resources:
 #            requests:
 #              cpu: 3
@@ -36,7 +37,7 @@ spec:
 #              memory: 100M
           env:
             - name: imageVersion
-              value: v6 uwsgi lifecycle
+              value: "{v5:Configure livenessProbe, readinessProbe, lifecycle, sidecar}"
           ports:
           - containerPort: 8080
           livenessProbe:
@@ -59,7 +60,6 @@ spec:
             preStop:
               exec:
                 command: ["/bin/bash", "-c", "sleep 20"]
-
 ---
 apiVersion: v1
 kind: Service

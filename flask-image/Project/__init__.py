@@ -1,12 +1,10 @@
 import os
 import click
 from flask import Flask
-from .extension import db
 from .extension import api
 from .setting import config
 from .bluelog import app_rustful
 from .bluelog import api_bp
-from .models import Note
 from .models import *
 
 

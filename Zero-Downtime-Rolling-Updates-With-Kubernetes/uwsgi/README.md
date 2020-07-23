@@ -1,0 +1,8 @@
+1. [不加探针的uwsgi+gevent+flask](./uflask-deployment-v1.yaml)
+2. [加探针的uwsgi+gevent+flask](./uflask-deployment-v2.yaml)
+3. [加探针和preStop钩子的uwsgi+gevent+flask](./uflask-deployment-v3.yaml)
+4. [加探针和preStop钩子的uwsgi+gevent+flask](./uflask-deployment-v4.yaml)
+5. [加探针和preStop钩子和sidecar的uwsgi+gevent+flask](./uflask-deployment-v5.yaml)
+6. [加探针和preStop钩子和sidecar的uwsgi+gevent+flask](./uflask-deployment-v6.yaml)
+7. [加探针和preStop钩子和sidecar的uwsgi+gevent+flask,新增API：/api/sleep/\<int:sleep_second\>用于测试preStop的时间](./uflask-deployment-v7.yaml)
+8. [加探针和preStop钩子和sidecar的uwsgi+gevent+flask,新增API：/api/sleep/\<int:sleep_second\>用于测试preStop的时间](./uflask-deployment-v8.yaml)

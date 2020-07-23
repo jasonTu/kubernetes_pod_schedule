@@ -32,25 +32,9 @@ spec:
 #              memory: 100M
           env:
             - name: imageVersion
-              value: v1
+              value: "{v1:no livenessProbe, readinessProbe, lifecycle}"
           ports:
           - containerPort: 8080
-          livenessProbe:
-            httpGet:
-              path: /api/
-              port: 8080
-              scheme: HTTP
-            initialDelaySeconds: 5  #表示容器启动之后延迟多久进行liveness探测
-            periodSeconds: 10       # 探测的周期时间
-            timeoutSeconds: 2       # 每次执行探测的超时时间
-            successThreshold: 1     # 最少连续几次探测成功的次数，满足该次数则认为success。
-            failureThreshold: 3     # 最少连续几次探测失败的次数，满足该次数则认为fail作
-          readinessProbe:
-            httpGet:
-              path: /api/
-              port: 8080
-            initialDelaySeconds: 5  #表示容器启动之后延迟多久进行liveness探测
-            periodSeconds: 5       # 探测的周期时间
 
 ---
 apiVersion: v1

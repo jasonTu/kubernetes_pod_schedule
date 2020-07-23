@@ -41,7 +41,20 @@
 
 # 二 控制滚动升级速率
 滚动升级策略的maxSurge 和 maxUnavailable 属性，决定了一次替换多少个pod
+
+简介：
 ![2](.README_images/4bb9ad79.png)
+
+**maxSurge**:
+- **使当前Deployment的pod处于Runing状态的个数的上限为** = 原个数 + maxSurge
+- 若设置成百分比（例如10%）系统会先以向上取整的方式计算出绝对值(整数)
+
+**maxUnavailable**:
+- **使当前Deployment的pod处于Runing状态的个数的下限值为** = 原个数 - maxUnavailable
+- 若设置成百分比（例如10%）系统会先以向下取整的方式计算出绝对值(整数)
+
+
+测试：
 - 假设有3个实例，使用了maxSurge=1和 maxUnavailable=0,那么就必须有3个pod一直处于可运行状态，最多允许同时存在4个pod![3](.README_images/9e746ef7.png)
 - 假设有3个实例，maxSurge=1 ， maxUnavailable=1，必须有2个pod一直处于可运行状态，最多同时允许4个pod，**增加了滚动升级的速度**。![4](.README_images/6131ae86.png)
 
@@ -59,7 +72,8 @@
     - 通过让Kubernetes在pod就绪之后继续等待minReadySeconds的时间，然后继续执行滚动升级，来减缓滚动升级的过程
     - 通常需要将minReadySeconds设置为更高的值，确保pod在它们真正开始接受实际流量之后可以持续保持就绪状态
     - 像一种安全气囊，
-
+3. [Canary deployments](https://kubernetes.io/docs/concepts/cluster-administration/manage-deployment/#canary-deployments) 小部门方法，利用Service匹配两个Deployment的endpoint，流量均分在endpoint上
+那么就可部署小部分pod，先测试系统稳定性，再进行全面部署。
 # 四 产生宕机原理解析
 ## 4.1 从旧的 Pod 实例到新的实例究竟会发生什么?
 1. **在集群内部**：
@@ -139,7 +153,15 @@ Kubernetes 会根据 Pods 的状态去更新 Endpoints 对象，这样就可以�
           initialDelaySeconds: 5
           periodSeconds: 10
 ```
-# 六 preStop
+# 六 postStart 和 preStop
+## postStart
+Kubernetes 在容器创建后立即发送 postStart 事件。然而，postStart 处理函数的调用不保证早于容器的入口点（entrypoint） 的执行。postStart 处理函数与容器的代码是异步执行的，但 Kubernetes 的容器管理逻辑会一直阻塞等待 postStart 处理函数执行完毕。**只有 postStart 处理函数执行完毕，容器的状态才会变成 RUNNING**。
+
+## preStop
+[具体PreStop过程可看官网描述](https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods)
+>When a user requests deletion of a Pod, the system records the intended grace period before the Pod is allowed to be forcefully killed, and a TERM signal is sent to the main process in each container。Once the grace period has expired, the KILL signal is sent to those processes, and the Pod is then deleted from the API server
+>.If the Kubelet or the container manager is restarted while waiting for processes to terminate, the termination will be retried with the full grace period
+
 可读探针只是我们平滑滚动更新的起点,为了解决 Pod 停止的时候不会阻塞并等到负载均衡器重新配置的问题,我们需要使用 preStop 这个生命周期的钩子，在容器终止之前调用该钩子。
 
 生命周期钩子函数是同步的，所以必须在将最终终止信号发送到容器之前完成，在我们的示例中，我们使用该钩子简单的等待，然后 SIGTERM 信号将停止应用程序进程。同时，Kubernetes 将从 Endpoints 对象中删除该 Pod，所以该 Pod 将会从我们的负载均衡器中排除.
@@ -161,6 +183,16 @@ Kubernetes 会根据 Pods 的状态去更新 Endpoints 对象，这样就可以�
 而且上面的方式是只适用于短连接的，对于类似于 websocket 这种长连接应用需要做滚动更新的话目前还没有找到一个很好的解决方案，有的团队是将长连接转换成短连接来进行处理的，我这边还是在应用层面来做的支持，比如客户端增加重试机制，连接断掉以后会自动重新连接，大家如果有更好的办法也可以留言互相讨论下方案。
 
 # 测试部署情况
+
+## 测试结果
+### 对于正常服务接口的测试
+结果：通过preStop的设置，有效的遏制了5XX状态码的出现
+[测试结果](./Testing_Report/The_effect_of_PreStop/README.md)
+
+### 特殊测试，运行高延迟api，preStop的效果
+结果：
+[测试结果](./Testing_Report/PreStop_for_HighLatency_Api/README.md)
+
 ## 部署
 ```shell script
 vim flask-deployment-v1.txt
@@ -169,40 +201,80 @@ vim flask-deployment-v3.txt
 vim flask-deployment-v4.txt
 vim flask-deployment-v5.txt
 vim flask-deployment-v6.txt
-vim flask-deployment-v7.txt
+
 mv flask-deployment-v1.txt flask-deployment-v1.yaml
 mv flask-deployment-v2.txt flask-deployment-v2.yaml
 mv flask-deployment-v3.txt flask-deployment-v3.yaml
 mv flask-deployment-v4.txt flask-deployment-v4.yaml
 mv flask-deployment-v5.txt flask-deployment-v5.yaml
 mv flask-deployment-v6.txt flask-deployment-v6.yaml
-mv flask-deployment-v7.txt flask-deployment-v7.yaml
+
+vim uflask-deployment-v1.txt
+vim uflask-deployment-v2.txt
+vim uflask-deployment-v3.txt
+vim uflask-deployment-v4.txt
+vim uflask-deployment-v5.txt
+vim uflask-deployment-v6.txt
+vim uflask-deployment-v7.txt
+vim uflask-deployment-v8.txt
+mv uflask-deployment-v1.txt uflask-deployment-v1.yaml
+mv uflask-deployment-v2.txt uflask-deployment-v2.yaml
+mv uflask-deployment-v3.txt uflask-deployment-v3.yaml
+mv uflask-deployment-v4.txt uflask-deployment-v4.yaml
+mv uflask-deployment-v5.txt uflask-deployment-v5.yaml
+mv uflask-deployment-v6.txt uflask-deployment-v6.yaml
+mv uflask-deployment-v7.txt uflask-deployment-v7.yaml
+mv uflask-deployment-v8.txt uflask-deployment-v8.yaml
+
 kubectl apply -f flask-deployment-v1.yaml --record
 kubectl apply -f flask-deployment-v2.yaml --record
 kubectl apply -f flask-deployment-v3.yaml --record
 kubectl apply -f flask-deployment-v4.yaml --record
 kubectl apply -f flask-deployment-v5.yaml --record
 kubectl apply -f flask-deployment-v6.yaml --record
-kubectl apply -f flask-deployment-v7.yaml --record
+
+kubectl apply -f uflask-deployment-v1.yaml --record
+kubectl apply -f uflask-deployment-v2.yaml --record
+kubectl apply -f uflask-deployment-v3.yaml --record
+kubectl apply -f uflask-deployment-v4.yaml --record
+kubectl apply -f uflask-deployment-v5.yaml --record
+kubectl apply -f uflask-deployment-v6.yaml --record
+kubectl apply -f uflask-deployment-v7.yaml --record
+kubectl apply -f uflask-deployment-v8.yaml --record
+
 kubectl delete -f flask-deployment-v1.yaml 
 kubectl delete -f flask-deployment-v2.yaml 
 kubectl delete -f flask-deployment-v3.yaml 
 kubectl delete -f flask-deployment-v4.yaml 
 kubectl delete -f flask-deployment-v5.yaml 
+
+
+kubectl delete -f uflask-deployment-v1.yaml 
+kubectl delete -f uflask-deployment-v2.yaml 
+kubectl delete -f uflask-deployment-v3.yaml 
+kubectl delete -f uflask-deployment-v4.yaml 
+kubectl delete -f uflask-deployment-v5.yaml 
 ```
 ## 更新回滚状态查询
 ```shell script
+kubectl describe deployment flask-deployment
+# 看更新过程
 kubectl rollout status deployment flask-deployment 
+# 看可跳转版本历史
 kubectl rollout history deployment flask-deployment
+# 回滚指令
 kubectl rollout undo deployment flask-deployment --to-revision=2
 ```
 ## 测试用例
 ```shell script
-curl http://10.206.67.47:30007/api/
-while :; do curl http://10.206.67.47:30007/api/; sleep 1; done
+curl http://dev-bmonitoring-nabu.qa.cloudedge.trendmicro.com/api
+curl http://dev-bmonitoring-nabu.qa.cloudedge.trendmicro.com/api/sleep
+
 # 在Fortio的示例中，每秒具有500个请求和50个并发的keep-alive连接的调用如下所示
 fortio load -a -c 8 -qps 500 -t 60s http://dev-bmonitoring-nabu.qa.cloudedge.trendmicro.com/api/sleep
 fortio load -a -c 8 -qps 500 -t 60s http://dev-bmonitoring-nabu.qa.cloudedge.trendmicro.com/api
+# 建议docker，可直接启动Fortio的web，进行UI测试
+docker run -p 8080:8080 -p 8079:8079 fortio/fortio server & # For the server
 
 # ab
 ab -n 100 -c 10 http://dev-bmonitoring-nabu.qa.cloudedge.trendmicro.com/api/
@@ -210,20 +282,3 @@ ab -n 100 -c 10 http://dev-bmonitoring-nabu.qa.cloudedge.trendmicro.com/api/
 # go-test
 go run .\main.go -c 25 -n 100000 -u http://dev-bmonitoring-nabu.qa.cloudedge.trendmicro.com/api/
 ```
-
-## 测试结果
-1. rolling update 期间会随机遇到很多问题
-    - rolling update：![1](.README_images/86c2f335.png)
-    - 遇到504,404错误状态码，7分钟左右恢复：![5](.README_images/1378acda.png)
-    - 遇到509错误状体码，1分钟左右恢复：![6](.README_images/bc0735df.png)
-2. 部署两种类型的探针
-    - 发现依然存在问题:且在处理逻辑长的API，依然会有一些503出现 
-    - sleep_api:
-        ![18](.README_images/4d16c8db.png)
-    - api:
-        ![19](.README_images/67d6e0cb.png)
-3. 增加preStop声明钩子后，版本切换不会有问题
-    - sleep_api:
-        ![20](.README_images/f1e50d8b.png)
-    - api:
-        ![21](.README_images/bb72de8f.png)

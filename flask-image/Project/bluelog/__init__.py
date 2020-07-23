@@ -1,6 +1,6 @@
 from flask import Blueprint
 from .api import Todo,TodoList,initdb
-from .api import getversion,getversion_sleep
+from .api import getversion,getversion_sleep,getversion_sleeps
 from ..extension import api
 
 app_rustful = Blueprint('app_rustful', __name__)
@@ -17,4 +17,6 @@ api.add_resource(initdb, '/initdb')
 
 api.add_resource(getversion,'/')
 api.add_resource(getversion_sleep,'/sleep')
+api.add_resource(getversion_sleeps, '/sleep/<int:sleep_seconds>')
+
 

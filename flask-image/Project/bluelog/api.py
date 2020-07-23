@@ -94,3 +94,12 @@ class getversion_sleep(Resource):
         if 'imageVersion' in envrion:
             return {"message": envrion['imageVersion']}
         return {"message": "null"}
+
+class getversion_sleeps(Resource):
+    # 获得资源
+    def get(self, sleep_seconds):
+        envrion = os.environ
+        sleep(sleep_seconds)
+        if 'imageVersion' in envrion:
+            return {"message": envrion['imageVersion']}
+        return {"message": "null"}
