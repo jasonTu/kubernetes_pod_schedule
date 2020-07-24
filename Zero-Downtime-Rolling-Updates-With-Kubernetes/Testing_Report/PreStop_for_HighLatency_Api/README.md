@@ -1,5 +1,5 @@
 # uwsgi
-:smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile:
+:smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile:
 ## PreStop Test for HighLatency Api
 ### 目的+结论
 目的：4~5s的高延迟Api，需要设置多长preStop时间可以有效遏制5XX的出现
@@ -18,12 +18,12 @@ docker run -p 8080:8080 -p 8079:8079 fortio/fortio server & # For the server
     - c(线程数):10
     - qps(每s期望发送请求数)：100
     - t(持续时间)：60s
-    - URL：http://dev-bmonitoring-nabu.qa.cloudedge.trendmicro.com/api/4
+    - URL：http://dev-bmonitoring-nabu.qa.cloudedge.trendmicro.com/api/sleep/4
 - UI2界面填入信息
     - c(线程数):10
     - qps(每s期望发送请求数)：100
     - t(持续时间)：60s
-    - URL：http://dev-bmonitoring-nabu.qa.cloudedge.trendmicro.com/api/5
+    - URL：http://dev-bmonitoring-nabu.qa.cloudedge.trendmicro.com/api/sleep/5
 
 
 ### 测试用例
