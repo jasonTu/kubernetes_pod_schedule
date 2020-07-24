@@ -1,5 +1,5 @@
 # uwsgi 
-:smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile:
+:smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile:
 ## Zero-Dowentime-Test
 ### 目的 + 结论
 目的：Zero Downtime Rolling Updates With Kubernetes

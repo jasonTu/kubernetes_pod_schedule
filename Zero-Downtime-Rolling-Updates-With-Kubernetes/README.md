@@ -26,7 +26,7 @@
         kubectl set image deployment flask-deployment flask=88382078/flask-v1.0:1.0.0
         ```
     - Recreate：一次性删除所有旧版本pod，然后创建新的pod
-    - [速度看第二章](./README.md#二-控制滚动升级速率)
+    - [升级速率看第二章](./README.md#二-控制滚动升级速率)
 3. **回滚**
     - 手动命令：若处于滚动升级过程，该命令直接停止升级删除创建的新pod，并被老版本pod替代
         ```shell script
@@ -58,6 +58,8 @@
 - **使当前Deployment的pod处于Runing状态的个数的下限值为** = 申请replica的个数 - maxUnavailable
 - 若设置成百分比（例如10%）系统会先以向下取整的方式计算出绝对值(整数)
 
+番外preStop:lollipop:：
+- preStop只是拖延了Pod处于Terminating的时间，而Kubernetes控制升级速率的两个参数`maxSurge`和`maxUnavailable`计算的是pod处于Running状态的个数
 
 **举个栗子**：
 - 假设有3个实例，使用了maxSurge=1和 maxUnavailable=0,那么就必须有3个pod一直处于可运行状态，最多允许同时存在4个pod
