@@ -32,12 +32,12 @@ docker run -p 8080:8080 -p 8079:8079 fortio/fortio server & # For the server
 
 
 ### 报告
-1. preStop=10s
+1. preStop=10s,Rolling Updates 28s
     - /api/sleep/4:出现错误23 [preStop=10,sleep4报告](./fortio-report/preStop=10,sleep4.pdf)
     - /api/sleep/5:出现错误37[preStop=10,sleep5报告](./fortio-report/preStop=10,sleep5.pdf)
-2. preStop=20s
+2. preStop=20s,Rolling Updates 32s
     - /api/sleep/4:出现错误6[preStop=20,sleep4报告](./fortio-report/preStop=20,sleep4.pdf)
     - /api/sleep/5:出现错误5[preStop=20,sleep5报告](./fortio-report/preStop=20,sleep5.pdf)
-3. preStop=30s
+3. preStop=30s,Rolling Updates 28s
     - /api/sleep/4:出现错误1[preStop=30,sleep4报告](./fortio-report/preStop=30,sleep4.pdf)
     - /api/sleep/5:出现错误4[preStop=30,sleep5报告](./fortio-report/preStop=30,sleep5.pdf)
