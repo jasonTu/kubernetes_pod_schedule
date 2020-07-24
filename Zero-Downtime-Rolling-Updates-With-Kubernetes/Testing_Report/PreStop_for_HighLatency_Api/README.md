@@ -1,4 +1,5 @@
 # uwsgi
+:smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile: :smile:
 ## PreStop Test for HighLatency Api
 ### 目的+结论
 目的：4~5s的高延迟Api，需要设置多长preStop时间可以有效遏制5XX的出现
